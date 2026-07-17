@@ -1,4 +1,4 @@
-package webserver;
+package org.ttw.webserver;
 
 import lombok.Getter;
 import lombok.Setter;
