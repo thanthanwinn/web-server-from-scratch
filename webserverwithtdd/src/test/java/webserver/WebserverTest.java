@@ -1,20 +1,18 @@
 package webserver;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.ttw.HttpServer;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.ttw.HttpServer;
 
 public class WebserverTest {
 
-    @BeforeAll
+    @BeforeClass
     public static void beforeAll() throws IOException {
         HttpServer webServer = new HttpServer(9000);
 

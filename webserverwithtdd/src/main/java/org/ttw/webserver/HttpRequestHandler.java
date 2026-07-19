@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class HttpRequestHandler {
 
-    static final String SERVER_ROOT = "D:/web-server-from-scratch/webserverwithtdd/src/main/resources/";
+    private static final Path SERVER_ROOT = resolveServerRoot();
 
     HashMap<String,String> extContentType = new HashMap<>();
     public HttpRequestHandler(){
@@ -30,15 +30,13 @@ public class HttpRequestHandler {
     private void handleGet(HttpRequest request,HttpResponse response) {
         String url = request.getUrl();
 
-        Path path = null;
+        Path path;
         if("/".equals(url)){
             System.out.println("handle Get /");
-            path = Path.of(SERVER_ROOT, "index.html");
-        }else {
-            path = Path.of(SERVER_ROOT,url);
+            path = SERVER_ROOT.resolve("index.html");
+        } else {
+            path = SERVER_ROOT.resolve(url.startsWith("/") ? url.substring(1) : url);
         }
-
-
 
         try {
             String extension = this.getExtension(path);
@@ -48,7 +46,7 @@ public class HttpRequestHandler {
             response.setStatusCode("200");
             response.setBody(content);
             response.setHeader("Content-Type", contentType);
-        }catch (IOException e){
+        } catch (IOException e){
             System.out.println(e.getMessage());
             response.setStatusCode("500");
         }
@@ -68,6 +66,20 @@ public class HttpRequestHandler {
         return "";
    }
 
+   private static Path resolveServerRoot() {
+        Path[] candidates = {
+            Path.of("src", "main", "resources").toAbsolutePath().normalize(),
+            Path.of("bin", "src", "main", "resources").toAbsolutePath().normalize(),
+            Path.of("target", "classes").toAbsolutePath().normalize()
+        };
 
+        for (Path candidate : candidates) {
+            if (Files.isDirectory(candidate)) {
+                return candidate;
+            }
+        }
+
+        return Path.of("src", "main", "resources").toAbsolutePath().normalize();
+   }
 
 }
