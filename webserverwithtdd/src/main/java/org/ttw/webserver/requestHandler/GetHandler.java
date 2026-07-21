@@ -1,60 +1,46 @@
-package org.ttw.webserver;
+package org.ttw.webserver.requestHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-public class HttpRequestHandler {
+import org.ttw.webserver.HttpRequest;
+import org.ttw.webserver.HttpResponse;
 
-    private static final Path SERVER_ROOT = resolveServerRoot();
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String CONTENT_LENGTH = "Content-Length";
-    public static final String OK_200 = "200";
-    public static final String INTERNAL_SERVER_500 = "500";
-    public static final String GET_METHOD = "GET";
-    public static final String POST_METHOD = "POST";
+public class GetHandler implements RequestHandler {
+	
+	 private static final Path SERVER_ROOT = resolveServerRoot();
+	    public static final String CONTENT_TYPE = "Content-Type";
+	    public static final String CONTENT_LENGTH = "Content-Length";
+	    public static final String OK_200 = "200";
+	    public static final String INTERNAL_SERVER_500 = "500";
+	
+	    
+	    HashMap<String,String> extContentType = new HashMap<>();
+	    public GetHandler() {
+	        this.extContentType.put("html", "text/html");
+	        this.extContentType.put("htm", "text/html");
+	        this.extContentType.put("css", "text/css");
+	        this.extContentType.put("", "text/plain");
+	    }
 
-    HashMap<String,String> extContentType = new HashMap<>();
-    public HttpRequestHandler(){
-        this.extContentType.put("html", "text/html");
-        this.extContentType.put("htm", "text/html");
-        this.extContentType.put("css", "text/css");
-        this.extContentType.put("", "text/plain");
-    }
+	@Override
+	public void handle(HttpRequest request, HttpResponse response) {
+		// TODO Auto-generated method stub
+		 Path path = resolvePath(request.getUrl());
 
-    public  HttpResponse handle(HttpRequest request){
+	        try {
+	            String contentType = resolveContentType(path);
 
-       HttpResponse response = new HttpResponse(request);
+	            resolvedContent(response, path, contentType);
 
-       if(request.getHttpMethod().equals(GET_METHOD)){
-            handleGet(request,response);
-       }else if(request.getHttpMethod().equals(POST_METHOD)){
-           this.handlePost(request,response);
-       }
-       return response;
-    }
-
-    private void handleGet(HttpRequest request,HttpResponse response) {
-
-        Path path = resolvePath(request.getUrl());
-
-        try {
-            String contentType = resolveContentType(path);
-
-            resolvedContent(response, path, contentType);
-
-        } catch (IOException e){
-            System.out.println(e.getMessage());
-            response.setStatusCode(INTERNAL_SERVER_500);
-        }
-    }
-    private void handlePost(HttpRequest request,HttpResponse response) {
-
-        response.setStatusCode(OK_200);
-        response.setHeader(CONTENT_TYPE,"text/html");
-        response.setBody("Hello World");
-    }
+	        } catch (IOException e){
+	            System.out.println(e.getMessage());
+	            response.setStatusCode(INTERNAL_SERVER_500);
+	        }
+	}
+	
 
     private String resolveContentType(Path path) {
         String extension = this.getExtension(path);
