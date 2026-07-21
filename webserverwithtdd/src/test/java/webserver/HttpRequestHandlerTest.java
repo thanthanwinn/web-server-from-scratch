@@ -10,10 +10,8 @@ public class HttpRequestHandlerTest {
 
     @Test
     public void testHandleRequestDefaultRoot(){
-        HttpRequest request = new HttpRequest();
-        request.setHttpMethod("GET");
+        HttpRequest request = createHttpGetRequest();
         request.setUrl("/");
-        request.setHttpVersion("HTTP/1.1");
 
         HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
         HttpResponse response = httpRequestHandler.handle(request);
@@ -28,10 +26,8 @@ public class HttpRequestHandlerTest {
 
     @Test
     public void testHandleRequestIndexHtml(){
-        HttpRequest request = new HttpRequest();
-        request.setHttpMethod("GET");
+        HttpRequest request = createHttpGetRequest();
         request.setUrl("/index.html");
-        request.setHttpVersion("HTTP/1.1");
 
         HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
         HttpResponse response = httpRequestHandler.handle(request);
@@ -46,10 +42,8 @@ public class HttpRequestHandlerTest {
 
     @Test
     public void testHandleCSS(){
-        HttpRequest request = new HttpRequest();
-        request.setHttpMethod("GET");
+        HttpRequest request = createHttpGetRequest();
         request.setUrl("/style.css");
-        request.setHttpVersion("HTTP/1.1");
 
         HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
         HttpResponse response = httpRequestHandler.handle(request);
@@ -60,5 +54,50 @@ public class HttpRequestHandlerTest {
         Assert.assertEquals("OK",response.getStatusCodeDescription());
         Assert.assertEquals("text/css",response.getHeader("Content-Type"));
         Assert.assertTrue(body.contains("green"));
+    }
+
+    @Test
+    public void testHandlePost(){
+        HttpRequest request = createHttpPostRequest();
+        request.setUrl("/HelloWorld");
+
+        HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
+        HttpResponse response = httpRequestHandler.handle(request);
+
+        String body = response.getBody();
+
+        Assert.assertEquals("200",response.getStatusCode());
+        Assert.assertEquals("OK",response.getStatusCodeDescription());
+        Assert.assertEquals("text/html",response.getHeader("Content-Type"));
+        Assert.assertTrue(body.contains("Hello"));
+    }
+    @Test
+    public void testHandlePostAnother(){
+        HttpRequest request = createHttpPostRequest();
+        request.setUrl("/Another");
+
+        HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
+        HttpResponse response = httpRequestHandler.handle(request);
+
+        String body = response.getBody();
+
+        Assert.assertEquals("200",response.getStatusCode());
+        Assert.assertEquals("OK",response.getStatusCodeDescription());
+        Assert.assertEquals("text/html",response.getHeader("Content-Type"));
+        Assert.assertTrue(body.contains("Another"));
+    }
+
+    private HttpRequest createHttpGetRequest() {
+        HttpRequest request = new HttpRequest();
+        request.setHttpMethod("GET");
+        request.setHttpVersion("HTTP/1.1");
+        return request;
+    }
+
+    private HttpRequest createHttpPostRequest() {
+        HttpRequest request = new HttpRequest();
+        request.setHttpMethod("POST");
+        request.setHttpVersion("HTTP/1.1");
+        return request;
     }
 }

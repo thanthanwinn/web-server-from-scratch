@@ -8,6 +8,12 @@ import java.util.HashMap;
 public class HttpRequestHandler {
 
     private static final Path SERVER_ROOT = resolveServerRoot();
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_LENGTH = "Content-Length";
+    public static final String OK_200 = "200";
+    public static final String INTERNAL_SERVER_500 = "500";
+    public static final String GET_METHOD = "GET";
+    public static final String POST_METHOD = "POST";
 
     HashMap<String,String> extContentType = new HashMap<>();
     public HttpRequestHandler(){
@@ -21,15 +27,49 @@ public class HttpRequestHandler {
 
        HttpResponse response = new HttpResponse(request);
 
-       if(request.getHttpMethod().equals("GET")){
+       if(request.getHttpMethod().equals(GET_METHOD)){
             handleGet(request,response);
+       }else if(request.getHttpMethod().equals(POST_METHOD)){
+           this.handlePost(request,response);
        }
        return response;
     }
 
     private void handleGet(HttpRequest request,HttpResponse response) {
-        String url = request.getUrl();
 
+        Path path = resolvePath(request.getUrl());
+
+        try {
+            String contentType = resolveContentType(path);
+
+            resolvedContent(response, path, contentType);
+
+        } catch (IOException e){
+            System.out.println(e.getMessage());
+            response.setStatusCode(INTERNAL_SERVER_500);
+        }
+    }
+    private void handlePost(HttpRequest request,HttpResponse response) {
+
+        response.setStatusCode(OK_200);
+        response.setHeader(CONTENT_TYPE,"text/html");
+        response.setBody("Hello World");
+    }
+
+    private String resolveContentType(Path path) {
+        String extension = this.getExtension(path);
+        return this.extContentType.get(extension);
+    }
+
+    private void resolvedContent(HttpResponse response, Path path, String contentType) throws IOException {
+        String content = Files.readString(path);
+        response.setStatusCode(OK_200);
+        response.setBody(content);
+        response.setHeader(CONTENT_TYPE, contentType);
+        response.setHeader(CONTENT_LENGTH, content.length()+"");
+    }
+
+    private Path resolvePath(String url) {
         Path path;
         if("/".equals(url)){
             System.out.println("handle Get /");
@@ -37,22 +77,10 @@ public class HttpRequestHandler {
         } else {
             path = SERVER_ROOT.resolve(url.startsWith("/") ? url.substring(1) : url);
         }
-
-        try {
-            String extension = this.getExtension(path);
-            String contentType = this.extContentType.get(extension);
-
-            String content = Files.readString(path);
-            response.setStatusCode("200");
-            response.setBody(content);
-            response.setHeader("Content-Type", contentType);
-        } catch (IOException e){
-            System.out.println(e.getMessage());
-            response.setStatusCode("500");
-        }
+        return path;
     }
 
-   private  String getExtension(Path path){
+    private  String getExtension(Path path){
         if (path == null){
             return "";
         }
